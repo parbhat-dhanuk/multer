@@ -8,31 +8,42 @@
   const book = require("./model/bookModel")
 
 //   multer configuration
-
+  const maxSize=1000000 //limiting size
  const{multer,storage}=require("./middleware/multerConfig")
- const upload = multer({ storage: storage })
+ const upload = multer({ storage: storage,limits:{fileSize:maxSize} })
 
   app.use(express.json())
 
  //CREATE
 
  app.post("/book",upload.single("image"), async (req,res)=>{
-   const {bookName,bookPrice,authorName}=req.body
+    
+  let filename;
 
+  if(!filename){
+    filename ="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+  }else{
+    filename="localhost:3000"+req.file.filename
+  }
+    
+ const {bookName,bookPrice,authorName}=req.body
+   
   await book.create({
     bookName:bookName,
-    bookPrice:bookPrice,
-    authorName:authorName
+    bookPrice:bookPrice, 
+    authorName:authorName,
+    imageUrl:filename
+    
    })
    res.status(201).json({
     message:"Book created successfully "
    })
-
  })
 
 //READ ALL
 
 app.get("/book", async(req,res)=>{
+   
  const books = await book.find()  // array ma return garxa
  console.log(books)
 res.status(200).json({
@@ -72,13 +83,15 @@ app.delete("/book/:id", async (req,res)=>{
 
 //UPDATE
 
-app.patch("/book/:id",async(req,res)=>{
+app.patch("/book/:id", async(req,res)=>{
     const {bookName,bookPrice,authorName} = req.body
     const {id} = req.params
      await book.findByIdAndUpdate(id,{
         bookName:bookName,
         bookPrice:bookPrice,
-        authorName:authorName 
+        authorName:authorName,
+       
+       
     })
 
     res.status(200).json({
@@ -88,6 +101,7 @@ app.patch("/book/:id",async(req,res)=>{
 
 
 
+app.use(express.static("./storage/"))
 
 
  app.listen(3000,()=>{

@@ -10,6 +10,9 @@
         },
         authorName:{
             type:String
+        },
+        imageUrl:{
+            type:String
         }
 
        })
